@@ -12,11 +12,11 @@ int upModeButtonState = HIGH;
 int upModeButtonCycles = 0;
 
 int CYCLES_DEBOUNCE = 2; //check the button for X ticks to see if it is bouncing
-int MAX_MODES = 6;
+int MAX_MODES = 19;
 
 unsigned long tick = 0;
 
-int mode = 0;
+int mode = 17;
 
 uint16_t i, j, x, y ;
 uint32_t c, d;
@@ -26,7 +26,7 @@ void setup() {
   
   // Setup the NeoPixel Strip
   strip.begin();
-  strip.setBrightness(128);
+  strip.setBrightness(58); // Originally 128
   strip.show(); // Initialize all pixels to 'off'
   
   pinMode(upModePin, INPUT);    // declare pushbutton as input
@@ -37,39 +37,13 @@ void setup() {
 }
 
 void loop() {
-  // Some example procedures showing how to display to the pixels:
-  /*
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
-  */
-  // Send a theater pixel chase in...
-  /*
-  theaterChase(strip.Color(127, 127, 127), 50); // White
-  theaterChase(strip.Color(127,   0,   0), 50); // Red
-  theaterChase(strip.Color(  0,   0, 127), 50); // Blue
-  */
-  
-  // Not evenly distributed rainbow, fine with strips reversed
-  //rainbow(20);
-  
-  // I like this one, smooth scrolling rainbow
-  //rainbowCycle(20);
-  
-  // Flashing rainbow.. looks alright... would need strips to be reversed
-  //theaterChaseRainbow(50);
-  
-  
-
-  
-  
   
   switch(mode%MAX_MODES) {
     case 0:
-      solid(strip.Color(255, 0, 0)); // Red
+      solid(strip.Color(0, 255, 255)); // Red
       break;
     case 1:
-      solid(strip.Color(0, 255, 0)); // Greem
+      solid(strip.Color(0, 255, 0)); // Green
       break;
     case 2:
       solid(strip.Color(0, 0, 255)); // Blue
@@ -78,53 +52,70 @@ void loop() {
       solid(strip.Color(255, 255, 255)); // White
       break;
     case 4:
-      rainbowCycle(20);
+      rainbowCycle(20); // Rainbow
       break;
     case 5:
-      theaterChaseRainbow(50);
+      whiteRainbow(20, false); // White with Rainbow, no flash
       break;
     case 6:
-      colorWipe(strip.Color(255, 255, 255), 50); // Red
+      whiteRainbow(20, true); // White with Rainbow and flash
       break;
-/*
-    case 0: //solid
-      rainbow(20);
+    case 7:
+      sectionWipeTwo(strip.Color(255, 255, 255), strip.Color(0, 0, 0), 50); // White section wipe
       break;
-    case 1:
-      rainbowCycle(20);
+    case 8:
+      sectionWipeTwo(strip.Color(255, 0, 255), strip.Color(0, 0, 0), 50); // Purple section wipe
       break;
-    case 2:
-      theaterChaseRainbow(50);
+    case 9:
+      sectionWipeTwo(strip.Color(0, 255, 255), strip.Color(0, 0, 0), 50); // Teal section wipe
       break;
-    case 3:
-      colorWipe(strip.Color(255, 0, 0), 50); // Red
+    case 10:
+      sectionWipeTwo(strip.Color(0, 255, 255), strip.Color(255, 0, 255), 50); // 2 color section wipe, teal & purple
       break;
-    case 4:
-      colorWipe(strip.Color(0, 255, 0), 50); // Green
+    case 11:
+      sectionWipeTwo(strip.Color(0, 255, 0), strip.Color(255, 0, 255), 50); // 2 color section wipe, teal & purple
       break;
-    case 5:
-      colorWipe(strip.Color(0, 0, 255), 50); // Blue
+    case 12:
+      solidTwo(strip.Color(0, 255, 0), strip.Color(255, 0, 255)); // 2 color solid, teal & purple
       break;
-*/
+    case 13:
+      //              green                  white                      bg: purple
+      twinkleRand(5,strip.Color(0,255,0), strip.Color(255,255,255), strip.Color(200, 0, 255),90); // 
+      break;
+    case 14:
+      //              yellow                  blue                      bg: white
+      twinkleRand(5,strip.Color(255,255,0), strip.Color(0,0,255), strip.Color(255, 255, 255),90); // 
+      break;
+    case 15:
+      //              yellow                  white                      bg: black
+      twinkleRand(5,strip.Color(255,255,0), strip.Color(255,255,255), strip.Color(0, 0, 0),90); // 
+      break;
+    case 16:
+      //              white                  white                      bg: black
+      twinkleRand(5,strip.Color(255,255,255), strip.Color(255,255,255), strip.Color(0, 0, 0),90); // 
+      break;
+    case 17:
+      //              random                  random                      bg: black
+      twinkleRand(5, Wheel(random(255)), Wheel(random(255)), strip.Color(0, 0, 0),90); // 
+      break;
+    case 18:
+      //              random                  random                      bg: white
+      twinkleRand(5, Wheel(random(255)), Wheel(random(255)), strip.Color(255, 255, 255),90); // 
+      break;
   }
   
   //strip.setPixelColor(strip.numPixels()-1, strip.Color(0,0,0)); //set that last LED off because it overlaps
-  strip.show();
-  
-  handleButtons();
-  
+  strip.show();  
+  handleButtons();  
   tick++;
 }
 
-
 void triggerModeUp() {
   ++mode;
-  //blackout();
   solid(strip.Color(0, 0, 0));
 }
 
 void handleButtons() {
-
   // software debounce
   if(digitalRead(upModePin) != upModeButtonState) {
     upModeButtonCycles++;
@@ -138,16 +129,11 @@ void handleButtons() {
   }
 }
 
-
-
-
 void solid(uint32_t c) {
-  for(int i=0; i < strip.numPixels()+1; i++) {
+  for(uint8_t i=0; i < strip.numPixels()+1; i++) {
       strip.setPixelColor(i, c);
   }
-  //strip.show();
 }
-
 
 // Slightly different, this makes the rainbow equally distributed throughout
 void rainbowCycle(uint8_t wait) {
@@ -165,22 +151,136 @@ void rainbowCycle(uint8_t wait) {
 
 
 //Theatre-style crawling lights with rainbow effect
+void whiteRainbow(uint8_t wait, bool flash) {
+  uint8_t   j = tick % 256;
+  for (uint8_t i=0; i < strip.numPixels(); i=i+4) {
+    strip.setPixelColor(i, Wheel((j*2)%255) ); // Rainbow pixel
+    strip.setPixelColor(i+1, strip.Color(255, 255, 255)); // White
+    if (j%4 == 0 || !flash) {
+      strip.setPixelColor(i+2, strip.Color(255, 255, 255));
+    } else {
+      strip.setPixelColor(i+2, 0);
+    }
+    strip.setPixelColor(i+3, strip.Color(255, 255, 255)); //White
+   }
+  strip.show();
+  delay(wait);
+}
+
+/*
+void sectionWipe(uint32_t c, uint8_t wait) {
+  // 15 lights per half meter = 1 section
+  j = tick % 15;  
+  
+  for (int i=0; i<strip.numPixels(); i++)
+  {
+    strip.setPixelColor(i, 0); // blackout first
+  }
+  
+  for (int i=0; i<strip.numPixels(); i=i+15)
+  {
+    //strip.setPixelColor(i+j, c);
+    for(int b=0; b<3; b++) {
+      strip.setPixelColor(i+b+j, c); // Light up section
+    }
+  }
+
+  strip.show();
+  delay(wait);  
+}
+*/
+
+void sectionWipeTwo(uint32_t c1, uint32_t c2, uint8_t wait) {
+  // 15 lights per half meter = 1 section
+  j = tick % 15;  
+  
+  solid(0); // blackout first
+  
+  for (uint8_t i=0; i<strip.numPixels(); i=i+15)
+  {
+    //strip.setPixelColor(i+j, c);
+    for(uint8_t b=0; b<5; b++) {
+      strip.setPixelColor(i+b+j, c1); // Light up section
+    }
+    strip.setPixelColor(i+j+9, c2);
+    strip.setPixelColor(i+j+10, c2); 
+  }
+
+  strip.show();
+  delay(wait);  
+}
+
+
+void solidTwo(uint32_t c1, uint32_t c2) {
+  for (uint8_t i=0; i<strip.numPixels(); i++)
+  {
+    if (i%25 < 17) {
+      strip.setPixelColor(i, c1);
+    } else {
+      strip.setPixelColor(i, c2);
+    }
+  }
+  strip.show();
+}
+
+void twinkleRand(uint8_t num, uint32_t c1, uint32_t c2, uint32_t bg, uint8_t wait) {
+  // set background
+  solid(bg);
+  // for each num
+  for (int i=0; i<num; i++) {
+    strip.setPixelColor(random(strip.numPixels()),c1);
+    strip.setPixelColor(random(strip.numPixels()),c2);
+  }
+  strip.show();
+  delay(wait);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+
+
+//Theatre-style crawling lights with rainbow effect
 void theaterChaseRainbow(uint8_t wait) {
   //for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
   int   j = tick % 256;
-    for (int q=0; q < 3; q++) {
+//    for (int q=0; q < 3; q++) {
         for (int i=0; i < strip.numPixels(); i=i+3) {
-          strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+          strip.setPixelColor(i, Wheel( (i+j) % 255));    //turn every third pixel on
+          strip.setPixelColor(i+1, strip.Color(255, 255, 255));        //turn every third pixel off
+          strip.setPixelColor(i+2, strip.Color(255, 255, 255));        //turn every third pixel off
         }
-        strip.show();
+//        strip.show();
        
-        delay(wait);
+//        delay(wait);
        
-        for (int i=0; i < strip.numPixels(); i=i+3) {
-          strip.setPixelColor(i+q, 0);        //turn every third pixel off
-        }
-    }
+        //for (int i=0; i < strip.numPixels(); i=i+3) {
+          //strip.setPixelColor(i+q, 0);        //turn every third pixel off
+        //}
+  //  }
   //}
+  strip.show();
+  delay(wait);
 }
 
 
@@ -192,7 +292,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
       delay(wait);
   }
 }
-
+*/
 
 /*
 
