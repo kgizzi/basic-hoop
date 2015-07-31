@@ -4,7 +4,7 @@
 
 #define PIN_DATA 0
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN_DATA, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(75, PIN_DATA, NEO_GRB + NEO_KHZ800);
 
 
 int upModePin = 2;
@@ -16,9 +16,9 @@ int MAX_MODES = 19;
 
 unsigned long tick = 0;
 
-int mode = 17;
+int mode = 0;
 
-uint16_t i, j, x, y ;
+uint8_t i, j, x;
 uint32_t c, d;
 
 void setup() {
@@ -130,14 +130,14 @@ void handleButtons() {
 }
 
 void solid(uint32_t c) {
-  for(uint8_t i=0; i < strip.numPixels()+1; i++) {
+  for(i=0; i < strip.numPixels()+1; i++) {
       strip.setPixelColor(i, c);
   }
 }
 
 // Slightly different, this makes the rainbow equally distributed throughout
 void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
+  //uint16_t i, j;
   j = tick % 256;
 
   //for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
@@ -152,8 +152,8 @@ void rainbowCycle(uint8_t wait) {
 
 //Theatre-style crawling lights with rainbow effect
 void whiteRainbow(uint8_t wait, bool flash) {
-  uint8_t   j = tick % 256;
-  for (uint8_t i=0; i < strip.numPixels(); i=i+4) {
+  j = tick % 256;
+  for (i=0; i < strip.numPixels(); i=i+4) {
     strip.setPixelColor(i, Wheel((j*2)%255) ); // Rainbow pixel
     strip.setPixelColor(i+1, strip.Color(255, 255, 255)); // White
     if (j%4 == 0 || !flash) {
@@ -196,14 +196,19 @@ void sectionWipeTwo(uint32_t c1, uint32_t c2, uint8_t wait) {
   
   solid(0); // blackout first
   
-  for (uint8_t i=0; i<strip.numPixels(); i=i+15)
+  for (i=0; i<strip.numPixels(); i=i+15)
   {
     //strip.setPixelColor(i+j, c);
-    for(uint8_t b=0; b<5; b++) {
-      strip.setPixelColor(i+b+j, c1); // Light up section
+    for(x=0; x<5; x++) {
+      //if ((i+b+j) >= 0) {
+        strip.setPixelColor(i+x+j, c1); // Light up section
+      //}
     }
-    strip.setPixelColor(i+j+9, c2);
-    strip.setPixelColor(i+j+10, c2); 
+    //if ((i+j+9) >= 0)
+    //{
+      strip.setPixelColor(i+j+9, c2);
+      strip.setPixelColor(i+j+10, c2);
+    //}
   }
 
   strip.show();
@@ -212,7 +217,7 @@ void sectionWipeTwo(uint32_t c1, uint32_t c2, uint8_t wait) {
 
 
 void solidTwo(uint32_t c1, uint32_t c2) {
-  for (uint8_t i=0; i<strip.numPixels(); i++)
+  for (i=0; i<strip.numPixels(); i++)
   {
     if (i%25 < 17) {
       strip.setPixelColor(i, c1);
@@ -227,7 +232,7 @@ void twinkleRand(uint8_t num, uint32_t c1, uint32_t c2, uint32_t bg, uint8_t wai
   // set background
   solid(bg);
   // for each num
-  for (int i=0; i<num; i++) {
+  for (i=0; i<num; i++) {
     strip.setPixelColor(random(strip.numPixels()),c1);
     strip.setPixelColor(random(strip.numPixels()),c2);
   }
